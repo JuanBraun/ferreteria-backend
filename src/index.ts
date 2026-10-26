@@ -1,7 +1,8 @@
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { conectarDB } from './config/database';
+import productoRepository from './repositories/ProductoRepository';
 
 dotenv.config();
 
@@ -16,12 +17,13 @@ app.get('/', (req, res) => {
     res.send('API Ferretería Backend activa');
 });
 
-// Iniciar servidor y conectar a la base de datos
-const iniciarServidor = async () => {
-    await conectarDB();
-    app.listen(PORT, () => {
-        console.log(`Servidor corriendo en http://localhost:${PORT}`);
-    });
-};
+// Listar productos
+app.get('/api/productos', async (req, res) => {
+    const productos = await productoRepository.obtenerTodos();
+    res.json(productos);
+});
 
-iniciarServidor();
+// Iniciar servidor
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
