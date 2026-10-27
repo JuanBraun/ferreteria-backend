@@ -2,7 +2,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import productoRepository from './repositories/ProductoRepository';
+import productoRoutes from './routes/productoRoutes';
 
 dotenv.config();
 
@@ -17,13 +17,11 @@ app.get('/', (req, res) => {
     res.send('API Ferretería Backend activa');
 });
 
-// Listar productos
-app.get('/api/productos', async (req, res) => {
-    const productos = await productoRepository.obtenerTodos();
-    res.json(productos);
-});
+// Registrar las rutas de productos
+app.use('/api/productos', productoRoutes);
 
 // Iniciar servidor
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
+
