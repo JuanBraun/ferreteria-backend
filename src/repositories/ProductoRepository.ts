@@ -1,5 +1,5 @@
 
-import { Producto } from '../models/Producto';
+import { Producto } from '../models/producto';
 
 class ProductoRepository {
     private productos: Producto[] = [
@@ -28,6 +28,10 @@ class ProductoRepository {
     async obtenerTodos(): Promise<Producto[]> {
         return this.productos;
     }
+
+    async obtenerPorId(id: number): Promise<Producto | undefined> {
+        return this.productos.find(producto => producto.id === id);
+  }
 }
 
 export default new ProductoRepository();
