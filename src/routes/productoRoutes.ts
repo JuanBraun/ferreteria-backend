@@ -12,4 +12,16 @@ router.get('/:id', (req, res) => {
     productoController.obtenerPorId(req, res);
 });
 
+router.post('/', (req, res) => {
+    productoController.crear(req, res);
+});
+
+router.put('/:id', (req, res) => {
+    return productoController.actualizar(req, res);
+});
+
+router.delete('/:id', (req, res) => {
+    return productoController.eliminar(req, res);
+});
+
 export default router;
