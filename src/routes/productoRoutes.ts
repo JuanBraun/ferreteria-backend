@@ -5,15 +5,15 @@ import productoController from '../controllers/productoController';
 const router = Router();
 
 router.get('/', (req, res) => {
-    productoController.listar(req, res);
+    return productoController.listar(req, res);
 });
 
 router.get('/:id', (req, res) => {
-    productoController.obtenerPorId(req, res);
+    return productoController.obtenerPorId(req, res);
 });
 
 router.post('/', (req, res) => {
-    productoController.crear(req, res);
+    return productoController.crear(req, res);
 });
 
 router.put('/:id', (req, res) => {
