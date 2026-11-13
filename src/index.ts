@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import productoRoutes from './routes/productoRoutes';
 import categoriaRoutes from './routes/categoriaRoutes';
+import proveedorRoutes from './routes/proveedorRoutes';
 import errorHandler from './middlewares/errorHandler';
 
 dotenv.config();
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 // Registrar las rutas
 app.use('/api/productos', productoRoutes);
 app.use('/api/categorias', categoriaRoutes);
+app.use('/api/proveedores', proveedorRoutes);
 
 // Middleware global de manejo de errores
 app.use(errorHandler);
