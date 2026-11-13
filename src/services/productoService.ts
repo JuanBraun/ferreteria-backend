@@ -1,5 +1,7 @@
+
 import { Producto } from '../models/producto';
 import productoRepository from '../repositories/ProductoRepository';
+import AppError from '../utils/appError';
 
 interface OpcionesListado {
     page: number;
@@ -14,52 +16,52 @@ interface OpcionesListado {
 class ProductoService {
 
     async listar(opciones: OpcionesListado) {
-    const {
-        page,
-        limit,
-        sortBy,
-        order,
-        nombre,
-        codigo,
-        categoria
-    } = opciones;
+        const {
+            page,
+            limit,
+            sortBy,
+            order,
+            nombre,
+            codigo,
+            categoria
+        } = opciones;
 
-    if (!Number.isInteger(page) || page < 1) {
-        throw new Error('La página debe ser un entero mayor o igual a 1');
+        if (!Number.isInteger(page) || page < 1) {
+            throw new AppError('La página debe ser un entero mayor o igual a 1');
+        }
+
+        if (!Number.isInteger(limit) || limit < 1) {
+            throw new AppError('El límite debe ser un entero mayor o igual a 1');
+        }
+
+        const camposOrdenables: (keyof Producto)[] = [
+            'id',
+            'codigo',
+            'nombre',
+            'precio',
+            'stockActual',
+            'stockMinimo',
+            'categoria'
+        ];
+
+        if (!camposOrdenables.includes(sortBy)) {
+            throw new AppError('Campo de ordenamiento no válido');
+        }
+
+        if (order !== 'asc' && order !== 'desc') {
+            throw new AppError('El orden debe ser asc o desc');
+        }
+
+        return await productoRepository.listarConOpciones({
+            page,
+            limit,
+            sortBy,
+            order,
+            nombre,
+            codigo,
+            categoria
+        });
     }
-
-    if (!Number.isInteger(limit) || limit < 1) {
-        throw new Error('El límite debe ser un entero mayor o igual a 1');
-    }
-
-    const camposOrdenables: (keyof Producto)[] = [
-        'id',
-        'codigo',
-        'nombre',
-        'precio',
-        'stockActual',
-        'stockMinimo',
-        'categoria'
-    ];
-
-    if (!camposOrdenables.includes(sortBy)) {
-        throw new Error('Campo de ordenamiento no válido');
-    }
-
-    if (order !== 'asc' && order !== 'desc') {
-        throw new Error('El orden debe ser asc o desc');
-    }
-
-    return await productoRepository.listarConOpciones({
-        page,
-        limit,
-        sortBy,
-        order,
-        nombre,
-        codigo,
-        categoria
-    });
-}
 
     async obtenerPorId(id: number): Promise<Producto | undefined> {
         return await productoRepository.obtenerPorId(id);
@@ -75,7 +77,7 @@ class ProductoService {
         );
 
         if (codigoExiste) {
-            throw new Error('Ya existe un producto con ese código');
+            throw new AppError('Ya existe un producto con ese código');
         }
 
         const nuevoProducto: Producto = {
@@ -106,7 +108,7 @@ class ProductoService {
         );
 
         if (codigoExiste) {
-            throw new Error('Ya existe otro producto con ese código');
+            throw new AppError('Ya existe otro producto con ese código');
         }
 
         const productoActualizado: Producto = {
@@ -126,31 +128,31 @@ class ProductoService {
 
     private validarDatos(datos: Omit<Producto, 'id'>): void {
         if (!datos.codigo?.trim()) {
-            throw new Error('El código es obligatorio');
+            throw new AppError('El código es obligatorio');
         }
 
         if (!datos.nombre?.trim()) {
-            throw new Error('El nombre es obligatorio');
+            throw new AppError('El nombre es obligatorio');
         }
 
         if (!datos.descripcion?.trim()) {
-            throw new Error('La descripción es obligatoria');
+            throw new AppError('La descripción es obligatoria');
         }
 
         if (!datos.categoria?.trim()) {
-            throw new Error('La categoría es obligatoria');
+            throw new AppError('La categoría es obligatoria');
         }
 
         if (!Number.isFinite(datos.precio) || datos.precio <= 0) {
-            throw new Error('El precio debe ser un número mayor que cero');
+            throw new AppError('El precio debe ser un número mayor que cero');
         }
 
         if (!Number.isInteger(datos.stockActual) || datos.stockActual < 0) {
-            throw new Error('El stock actual debe ser un entero mayor o igual a cero');
+            throw new AppError('El stock actual debe ser un entero mayor o igual a cero');
         }
 
         if (!Number.isInteger(datos.stockMinimo) || datos.stockMinimo < 0) {
-            throw new Error('El stock mínimo debe ser un entero mayor o igual a cero');
+            throw new AppError('El stock mínimo debe ser un entero mayor o igual a cero');
         }
     }
 }

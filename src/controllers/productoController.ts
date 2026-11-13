@@ -1,58 +1,97 @@
+
 import { Request, Response } from 'express';
 import { Producto } from '../models/producto';
 import productoService from '../services/productoService';
+import AppError from '../utils/appError';
 
 class ProductoController {
+
+    private obtenerId(valor: string | string[]): number {
+        if (typeof valor !== 'string') {
+            throw new AppError('El ID debe ser un número entero positivo');
+        }
+
+        const id = Number(valor);
+
+        if (!Number.isInteger(id) || id <= 0) {
+            throw new AppError('El ID debe ser un número entero positivo');
+        }
+
+        return id;
+    }
+
+    private obtenerNumeroQuery(
+        valor: unknown,
+        predeterminado: number,
+        nombre: string
+    ): number {
+        if (valor === undefined) {
+            return predeterminado;
+        }
+
+        if (typeof valor !== 'string' || valor.trim() === '') {
+            throw new AppError(`El parámetro ${nombre} no es válido`);
+        }
+
+        const numero = Number(valor);
+
+        if (!Number.isInteger(numero) || numero < 1) {
+            throw new AppError(
+                `${nombre} debe ser un entero mayor o igual a 1`
+            );
+        }
+
+        return numero;
+    }
+
     async listar(req: Request, res: Response): Promise<void> {
-        try {
-            const opciones = {
-                page: Number(req.query.page) || 1,
-                limit: Number(req.query.limit) || 10,
-                sortBy: (req.query.sortBy || 'id') as keyof Producto,
-                order: (req.query.order || 'asc') as 'asc' | 'desc',
-                nombre: req.query.nombre as string | undefined,
-                codigo: req.query.codigo as string | undefined,
-                categoria: req.query.categoria as string | undefined
-            };
+        const page = this.obtenerNumeroQuery(req.query.page, 1, 'page');
+        const limit = this.obtenerNumeroQuery(req.query.limit, 10, 'limit');
 
-            const resultado = await productoService.listar(opciones);
+        const sortBy = (
+            req.query.sortBy === undefined ? 'id' : req.query.sortBy
+        ) as keyof Producto;
 
-            res.json({
+        const order = (
+            req.query.order === undefined ? 'asc' : req.query.order
+        ) as 'asc' | 'desc';
+
+        const opciones = {
+            page,
+            limit,
+            sortBy,
+            order,
+            nombre: req.query.nombre as string | undefined,
+            codigo: req.query.codigo as string | undefined,
+            categoria: req.query.categoria as string | undefined
+        };
+
+        const resultado = await productoService.listar(opciones);
+
+        res.status(200).json({
+            mensaje: 'Productos obtenidos correctamente',
+            datos: {
                 productos: resultado.productos,
                 total: resultado.total,
-                pagina: opciones.page,
-                limite: opciones.limit,
-                totalPaginas: Math.ceil(resultado.total / opciones.limit)
-            });
-        } catch (error) {
-            res.status(400).json({
-                mensaje: error instanceof Error
-                    ? error.message
-                    : 'Error al listar los productos'
-            });
-        }
+                pagina: page,
+                limite: limit,
+                totalPaginas: Math.ceil(resultado.total / limit)
+            }
+        });
     }
 
     async obtenerPorId(req: Request, res: Response): Promise<void> {
-        const id = Number(req.params.id);
-
-        if (!Number.isInteger(id) || id <= 0) {
-            res.status(400).json({
-                mensaje: 'El ID debe ser un número entero positivo'
-            });
-            return;
-        }
-
+        const id = this.obtenerId(req.params.id);
         const producto = await productoService.obtenerPorId(id);
 
         if (!producto) {
-            res.status(404).json({
-                mensaje: 'Producto no encontrado'
-            });
-            return;
+            throw new AppError('Producto no encontrado', 404);
         }
 
-        res.json(producto);
+        res.status(200).json({
+            mensaje: 'Producto obtenido correctamente',
+            datos: producto
+        });
     }
 
     async crear(req: Request, res: Response): Promise<void> {
@@ -66,31 +105,16 @@ class ProductoController {
             categoria: req.body.categoria
         };
 
-        try {
-            const productoCreado = await productoService.crear(datosProducto);
+        const productoCreado = await productoService.crear(datosProducto);
 
-            res.status(201).json({
-                mensaje: 'Producto creado correctamente',
-                producto: productoCreado
-            });
-        } catch (error) {
-            res.status(400).json({
-                mensaje: error instanceof Error
-                    ? error.message
-                    : 'Error al crear el producto'
-            });
-        }
+        res.status(201).json({
+            mensaje: 'Producto creado correctamente',
+            datos: productoCreado
+        });
     }
 
     async actualizar(req: Request, res: Response): Promise<void> {
-        const id = Number(req.params.id);
-
-        if (!Number.isInteger(id) || id <= 0) {
-            res.status(400).json({
-                mensaje: 'El ID debe ser un número entero positivo'
-            });
-            return;
-        }
+        const id = this.obtenerId(req.params.id);
 
         const datosActualizados = {
             codigo: req.body.codigo,
@@ -102,56 +126,35 @@ class ProductoController {
             categoria: req.body.categoria
         };
 
-        try {
-            const productoActualizado = await productoService.actualizar(
-                id,
-                datosActualizados
-            );
+        const productoActualizado = await productoService.actualizar(
+            id,
+            datosActualizados
+        );
 
-            if (!productoActualizado) {
-                res.status(404).json({
-                    mensaje: 'Producto no encontrado'
-                });
-                return;
-            }
-
-            res.json({
-                mensaje: 'Producto actualizado correctamente',
-                producto: productoActualizado
-            });
-        } catch (error) {
-            res.status(400).json({
-                mensaje: error instanceof Error
-                    ? error.message
-                    : 'Error al actualizar el producto'
-            });
+        if (!productoActualizado) {
+            throw new AppError('Producto no encontrado', 404);
         }
+
+        res.status(200).json({
+            mensaje: 'Producto actualizado correctamente',
+            datos: productoActualizado
+        });
     }
 
     async eliminar(req: Request, res: Response): Promise<void> {
-        const id = Number(req.params.id);
-
-        if (!Number.isInteger(id) || id <= 0) {
-            res.status(400).json({
-                mensaje: 'El ID debe ser un número entero positivo'
-            });
-            return;
-        }
-
+        const id = this.obtenerId(req.params.id);
         const productoEliminado = await productoService.eliminar(id);
 
         if (!productoEliminado) {
-            res.status(404).json({
-                mensaje: 'Producto no encontrado'
-            });
-            return;
+            throw new AppError('Producto no encontrado', 404);
         }
 
-        res.json({
+        res.status(200).json({
             mensaje: 'Producto eliminado correctamente',
-            producto: productoEliminado
+            datos: productoEliminado
         });
     }
 }
 
 export default new ProductoController();
+
