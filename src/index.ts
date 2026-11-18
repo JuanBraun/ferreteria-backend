@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import productoRoutes from './routes/productoRoutes';
 import categoriaRoutes from './routes/categoriaRoutes';
 import proveedorRoutes from './routes/proveedorRoutes';
+import inventarioRoutes from './routes/inventarioRoutes';
 import errorHandler from './middlewares/errorHandler';
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.get('/', (req, res) => {
 app.use('/api/productos', productoRoutes);
 app.use('/api/categorias', categoriaRoutes);
 app.use('/api/proveedores', proveedorRoutes);
+app.use('/api/inventario', inventarioRoutes);
 
 // Middleware global de manejo de errores
 app.use(errorHandler);
