@@ -1,10 +1,11 @@
 
 import { Request, Response, NextFunction } from 'express';
 import AppError from '../utils/appError';
+import { sendError } from '../utils/apiResponse';
 
 const errorHandler = (
     error: unknown,
-    req: Request,
+    _req: Request,
     res: Response,
     next: NextFunction
 ): void => {
@@ -21,10 +22,7 @@ const errorHandler = (
         ? error.message
         : 'Error interno del servidor';
 
-    res.status(statusCode).json({
-        mensaje,
-        error: true
-    });
+    sendError(res, mensaje, statusCode);
 };
 
 export default errorHandler;
