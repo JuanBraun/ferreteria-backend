@@ -1,8 +1,12 @@
-
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import productoRepository from './repositories/ProductoRepository';
+import productoRoutes from './routes/productoRoutes';
+import categoriaRoutes from './routes/categoriaRoutes';
+import proveedorRoutes from './routes/proveedorRoutes';
+import inventarioRoutes from './routes/inventarioRoutes';
+import errorHandler from './middlewares/errorHandler';
+import movimientoRoutes from './routes/movimientoRoutes';
 
 dotenv.config();
 
@@ -17,11 +21,15 @@ app.get('/', (req, res) => {
     res.send('API Ferretería Backend activa');
 });
 
-// Listar productos
-app.get('/api/productos', async (req, res) => {
-    const productos = await productoRepository.obtenerTodos();
-    res.json(productos);
-});
+// Registrar las rutas
+app.use('/api/productos', productoRoutes);
+app.use('/api/categorias', categoriaRoutes);
+app.use('/api/proveedores', proveedorRoutes);
+app.use('/api/inventario', inventarioRoutes);
+app.use('/api/movimientos', movimientoRoutes);
+
+// Middleware global de manejo de errores
+app.use(errorHandler);
 
 // Iniciar servidor
 app.listen(PORT, () => {
