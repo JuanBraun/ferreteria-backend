@@ -3,12 +3,24 @@ import { Movimiento } from '../models/movimiento';
 import movimientoRepository from '../repositories/MovimientoRepository';
 import productoRepository from '../repositories/ProductoRepository';
 import AppError from '../utils/appError';
+import { QueryOptions } from '../utils/pagination';
 
 class MovimientoService {
 
-    async listar() {
-        return await movimientoRepository.obtenerTodos();
-    }
+    async listar(query: QueryOptions) {
+  return await movimientoRepository.obtenerTodos(query);
+}
+
+async actualizar(id: number, datos: Partial<Movimiento>) {
+  const actualizado = await movimientoRepository.actualizar(id, datos);
+  if (!actualizado) throw new AppError('Movimiento no encontrado', 404);
+  return actualizado;
+}
+
+async eliminar(id: number) {
+  const eliminado = await movimientoRepository.eliminar(id);
+  if (!eliminado) throw new AppError('Movimiento no encontrado', 404);
+}
 
     async obtenerPorId(id: number) {
         const movimiento = await movimientoRepository.obtenerPorId(id);
