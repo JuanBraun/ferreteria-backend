@@ -23,11 +23,11 @@ app.get('/', (req, res) => {
 });
 
 // Registrar las rutas
-app.use('/api/productos', productoRoutes);
-app.use('/api/categorias', categoriaRoutes);
-app.use('/api/proveedores', proveedorRoutes);
-app.use('/api/inventario', inventarioRoutes);
-app.use('/api/movimientos', movimientoRoutes);
+app.use('/api/v1/productos', productoRoutes);
+app.use('/api/v1/categorias', categoriaRoutes);
+app.use('/api/v1/proveedores', proveedorRoutes);
+app.use('/api/v1/inventario', inventarioRoutes);
+app.use('/api/v1/movimientos', movimientoRoutes);
 app.use('/api/v1/auth', authRoutes);
 
 // Middleware global de manejo de errores

@@ -43,7 +43,7 @@ async eliminar(id: number) {
     }
 
     async crear(datos: Omit<Movimiento, 'id' | 'fecha'>) {
-        const { productoId, tipo, cantidad, observacion } = datos;
+        const { productoId, tipo, cantidad, motivo } = datos;
 
         if (!Number.isInteger(productoId) || productoId <= 0) {
             throw new AppError('El ID del producto debe ser un entero positivo');
@@ -57,8 +57,8 @@ async eliminar(id: number) {
             throw new AppError('La cantidad debe ser un entero mayor que cero');
         }
 
-        if (observacion !== undefined && typeof observacion !== 'string') {
-            throw new AppError('La observación debe ser un texto');
+        if (!motivo || typeof motivo !== 'string' || !motivo.trim()) {
+            throw new AppError('El motivo del movimiento es obligatorio');
         }
 
         const producto = await productoRepository.obtenerPorId(productoId);
@@ -97,7 +97,7 @@ async eliminar(id: number) {
             tipo,
             cantidad,
             fecha: new Date(),
-            observacion: observacion?.trim() || undefined
+            motivo: motivo.trim()
         };
 
         return await movimientoRepository.crear(nuevoMovimiento);
