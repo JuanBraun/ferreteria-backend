@@ -15,8 +15,8 @@ class ProductoRepository {
         {
             id: 1,
             codigo: 'TOR-001',
-            nombre: 'Tornillo Phillips',
-            descripcion: 'Tornillo para madera',
+            nombre: 'Tornillo Phillips 1"',
+            descripcion: 'Tornillo autoperforante para madera (caja x 100u)',
             precio: 150,
             stockActual: 100,
             stockMinimo: 20,
@@ -25,12 +25,72 @@ class ProductoRepository {
         {
             id: 2,
             codigo: 'MAR-001',
-            nombre: 'Martillo',
-            descripcion: 'Martillo de acero con mango',
+            nombre: 'Martillo Galponero',
+            descripcion: 'Martillo de acero forjado con mango de fibra',
             precio: 8500,
             stockActual: 8,
             stockMinimo: 10,
             categoria: 'Herramientas'
+        },
+        {
+            id: 3,
+            codigo: 'PIN-001',
+            nombre: 'Pintura Látex Interior 4L',
+            descripcion: 'Látex blanco mate lavable',
+            precio: 18500,
+            stockActual: 24,
+            stockMinimo: 6,
+            categoria: 'Pinturería'
+        },
+        {
+            id: 4,
+            codigo: 'TAL-001',
+            nombre: 'Taladro Percutor 650W',
+            descripcion: 'Taladro eléctrico velocidad variable 13mm',
+            precio: 64000,
+            stockActual: 5,
+            stockMinimo: 3,
+            categoria: 'Herramientas Eléctricas'
+        },
+        {
+            id: 5,
+            codigo: 'CIN-001',
+            nombre: 'Cinta Métrica 5m',
+            descripcion: 'Cinta métrica metálica con freno y clip',
+            precio: 4200,
+            stockActual: 30,
+            stockMinimo: 10,
+            categoria: 'Medición'
+        },
+        {
+            id: 6,
+            codigo: 'LLA-001',
+            nombre: 'Llave Francesa 10"',
+            descripcion: 'Llave ajustable de acero cromo vanadio',
+            precio: 11200,
+            stockActual: 4,
+            stockMinimo: 8,
+            categoria: 'Herramientas'
+        },
+        {
+            id: 7,
+            codigo: 'CAB-001',
+            nombre: 'Cable Unipolar 2.5mm (Rollo 100m)',
+            descripcion: 'Cable eléctrico normalizado color celeste',
+            precio: 45000,
+            stockActual: 12,
+            stockMinimo: 4,
+            categoria: 'Electricidad'
+        },
+        {
+            id: 8,
+            codigo: 'ADH-001',
+            nombre: 'Adhesivo de Contacto 250ml',
+            descripcion: 'Pegamento multiuso de secado rápido',
+            precio: 3800,
+            stockActual: 18,
+            stockMinimo: 5,
+            categoria: 'Adhesivos y Selladores'
         }
     ];
 
