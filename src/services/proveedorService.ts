@@ -31,9 +31,13 @@ class ProveedorService {
     if (nombreExiste) {
       throw new AppError("Ya existe un proveedor con ese nombre", 400);
     }
+    const nuevoId =
+      proveedores.length > 0
+        ? Math.max(...proveedores.map((p) => p.id)) + 1
+        : 1;
 
     const nuevoProveedor: Proveedor = {
-      id: Date.now(),
+      id: nuevoId,
       nombre: datos.nombre.trim(),
       contacto: datos.contacto?.trim(),
       telefono: datos.telefono?.trim(),
