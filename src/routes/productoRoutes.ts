@@ -1,27 +1,18 @@
-
 import { Router } from 'express';
 import productoController from '../controllers/productoController';
 
 const router = Router();
 
-router.get('/', (req, res) => {
-    return productoController.listar(req, res);
-});
+router.get('/', (req, res, next) => productoController.listar(req, res, next));
 
-router.get('/:id', (req, res) => {
-    return productoController.obtenerPorId(req, res);
-});
+router.get('/:id', (req, res, next) => productoController.obtenerPorId(req, res, next));
 
-router.post('/', (req, res) => {
-    return productoController.crear(req, res);
-});
+router.post('/', (req, res, next) => productoController.crear(req, res, next));
 
-router.put('/:id', (req, res) => {
-    return productoController.actualizar(req, res);
-});
+router.patch('/:id', (req, res, next) => productoController.actualizar(req, res, next));
 
-router.delete('/:id', (req, res) => {
-    return productoController.eliminar(req, res);
-});
+router.put('/:id', (req, res, next) => productoController.actualizar(req, res, next));
+
+router.delete('/:id', (req, res, next) => productoController.eliminar(req, res, next));
 
 export default router;

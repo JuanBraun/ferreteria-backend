@@ -1,158 +1,98 @@
-
 import { Producto } from '../models/producto';
-import productoRepository from '../repositories/ProductoRepository';
+import productoRepository, { ProductoQueryOptions } from '../repositories/ProductoRepository';
 import AppError from '../utils/appError';
 
-interface OpcionesListado {
-    page: number;
-    limit: number;
-    sortBy: keyof Producto;
-    order: 'asc' | 'desc';
-    nombre?: string;
-    codigo?: string;
-    categoria?: string;
-}
-
 class ProductoService {
-
-    async listar(opciones: OpcionesListado) {
-        const {
-            page,
-            limit,
-            sortBy,
-            order,
-            nombre,
-            codigo,
-            categoria
-        } = opciones;
-
-        if (!Number.isInteger(page) || page < 1) {
-            throw new AppError('La página debe ser un entero mayor o igual a 1');
-        }
-
-        if (!Number.isInteger(limit) || limit < 1) {
-            throw new AppError('El límite debe ser un entero mayor o igual a 1');
-        }
-
-        const camposOrdenables: (keyof Producto)[] = [
-            'id',
-            'codigo',
-            'nombre',
-            'precio',
-            'stockActual',
-            'stockMinimo',
-            'categoria'
-        ];
-
-        if (!camposOrdenables.includes(sortBy)) {
-            throw new AppError('Campo de ordenamiento no válido');
-        }
-
-        if (order !== 'asc' && order !== 'desc') {
-            throw new AppError('El orden debe ser asc o desc');
-        }
-
-        return await productoRepository.listarConOpciones({
-            page,
-            limit,
-            sortBy,
-            order,
-            nombre,
-            codigo,
-            categoria
-        });
+    async listar(query: ProductoQueryOptions) {
+        return await productoRepository.obtenerTodos(query);
     }
 
-    async obtenerPorId(id: number): Promise<Producto | undefined> {
-        return await productoRepository.obtenerPorId(id);
+    async obtenerPorId(id: number): Promise<Producto> {
+        const producto = await productoRepository.obtenerPorId(id);
+        if (!producto) throw new AppError('Producto no encontrado', 404);
+        return producto;
     }
 
     async crear(datos: Omit<Producto, 'id'>): Promise<Producto> {
-        this.validarDatos(datos);
+        this.validarDatosCompletos(datos);
 
-        const productos = await productoRepository.obtenerTodos();
-
-        const codigoExiste = productos.some(
-            producto => producto.codigo === datos.codigo
+        const todos = await productoRepository.listarSinPaginar();
+        const codigoExiste = todos.some(
+            (p) => p.codigo.toLowerCase() === datos.codigo.trim().toLowerCase()
         );
-
         if (codigoExiste) {
-            throw new AppError('Ya existe un producto con ese código');
+            throw new AppError('Ya existe un producto con ese código', 400);
         }
 
-        const nuevoProducto: Producto = {
-            id: Date.now(),
-            ...datos
-        };
-
-        return await productoRepository.crear(nuevoProducto);
+        return await productoRepository.crear({
+            codigo: datos.codigo.trim().toUpperCase(),
+            nombre: datos.nombre.trim(),
+            descripcion: datos.descripcion?.trim() || '',
+            precio: Number(datos.precio),
+            stockActual: Number(datos.stockActual),
+            stockMinimo: Number(datos.stockMinimo),
+            categoria: datos.categoria.trim(),
+        });
     }
 
-    async actualizar(
-        id: number,
-        datos: Omit<Producto, 'id'>
-    ): Promise<Producto | undefined> {
+    async actualizar(id: number, datos: Partial<Omit<Producto, 'id'>>): Promise<Producto> {
+        await this.obtenerPorId(id);
 
-        this.validarDatos(datos);
-
-        const productoExistente = await productoRepository.obtenerPorId(id);
-
-        if (!productoExistente) {
-            return undefined;
-        }
-
-        const productos = await productoRepository.obtenerTodos();
-
-        const codigoExiste = productos.some(
-            producto => producto.codigo === datos.codigo && producto.id !== id
+        if (datos.codigo !== undefined) {
+            if (!datos.codigo.trim()) throw new AppError('El código no puede estar vacío', 400);
+            const todos = await productoRepository.listarSinPaginar();
+            const codigoExiste = todos.some(
+            (p) => p.codigo.toLowerCase() === datos.codigo!.trim().toLowerCase() && p.id !== id
         );
-
         if (codigoExiste) {
-            throw new AppError('Ya existe otro producto con ese código');
+        throw new AppError('Ya existe otro producto con ese código', 400);
         }
-
-        const productoActualizado: Producto = {
-            id: id,
-            ...datos
-        };
-
-        return await productoRepository.actualizar(
-            id,
-            productoActualizado
-        );
     }
 
-    async eliminar(id: number): Promise<Producto | undefined> {
-        return await productoRepository.eliminar(id);
+    if (datos.precio !== undefined && (!Number.isFinite(Number(datos.precio)) || Number(datos.precio) <= 0)) {
+        throw new AppError('El precio debe ser un número mayor que cero', 400);
     }
 
-    private validarDatos(datos: Omit<Producto, 'id'>): void {
-        if (!datos.codigo?.trim()) {
-            throw new AppError('El código es obligatorio');
+    if (datos.stockActual !== undefined && (!Number.isInteger(Number(datos.stockActual)) || Number(datos.stockActual) < 0)) {
+        throw new AppError('El stock actual debe ser un entero mayor o igual a cero', 400);
+    }
+
+    if (datos.stockMinimo !== undefined && (!Number.isInteger(Number(datos.stockMinimo)) || Number(datos.stockMinimo) < 0)) {
+        throw new AppError('El stock mínimo debe ser un entero mayor o igual a cero', 400);
+    }
+
+    const limpio: Partial<Producto> = {};
+    if (datos.codigo !== undefined) limpio.codigo = datos.codigo.trim().toUpperCase();
+    if (datos.nombre !== undefined) limpio.nombre = datos.nombre.trim();
+    if (datos.descripcion !== undefined) limpio.descripcion = datos.descripcion.trim();
+    if (datos.precio !== undefined) limpio.precio = Number(datos.precio);
+    if (datos.stockActual !== undefined) limpio.stockActual = Number(datos.stockActual);
+    if (datos.stockMinimo !== undefined) limpio.stockMinimo = Number(datos.stockMinimo);
+    if (datos.categoria !== undefined) limpio.categoria = datos.categoria.trim();
+
+    const actualizado = await productoRepository.actualizar(id, limpio);
+    if (!actualizado) throw new AppError('Producto no encontrado', 404);
+    return actualizado;
+    }
+
+    async eliminar(id: number): Promise<Producto> {
+        const eliminado = await productoRepository.eliminar(id);
+        if (!eliminado) throw new AppError('Producto no encontrado', 404);
+            return eliminado;
         }
 
-        if (!datos.nombre?.trim()) {
-            throw new AppError('El nombre es obligatorio');
+        private validarDatosCompletos(datos: Omit<Producto, 'id'>): void {
+        if (!datos.codigo?.trim()) throw new AppError('El código es obligatorio', 400);
+        if (!datos.nombre?.trim()) throw new AppError('El nombre es obligatorio', 400);
+        if (!datos.categoria?.trim()) throw new AppError('La categoría es obligatoria', 400);
+        if (!Number.isFinite(Number(datos.precio)) || Number(datos.precio) <= 0) {
+            throw new AppError('El precio debe ser un número mayor que cero', 400);
         }
-
-        if (!datos.descripcion?.trim()) {
-            throw new AppError('La descripción es obligatoria');
+        if (!Number.isInteger(Number(datos.stockActual)) || Number(datos.stockActual) < 0) {
+            throw new AppError('El stock actual debe ser un entero mayor o igual a cero', 400);
         }
-
-        if (!datos.categoria?.trim()) {
-            throw new AppError('La categoría es obligatoria');
-        }
-
-        if (!Number.isFinite(datos.precio) || datos.precio <= 0) {
-            throw new AppError('El precio debe ser un número mayor que cero');
-        }
-
-        if (!Number.isInteger(datos.stockActual) || datos.stockActual < 0) {
-            throw new AppError('El stock actual debe ser un entero mayor o igual a cero');
-        }
-
-        if (!Number.isInteger(datos.stockMinimo) || datos.stockMinimo < 0) {
-            throw new AppError('El stock mínimo debe ser un entero mayor o igual a cero');
+        if (!Number.isInteger(Number(datos.stockMinimo)) || Number(datos.stockMinimo) < 0) {
+            throw new AppError('El stock mínimo debe ser un entero mayor o igual a cero', 400);
         }
     }
 }
