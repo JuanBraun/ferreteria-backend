@@ -3,24 +3,16 @@ import categoriaController from '../controllers/categoriaController';
 
 const router = Router();
 
-router.get('/', (req, res) => {
-    return categoriaController.listar(req, res);
-});
+router.get('/', (req, res, next) => categoriaController.listar(req, res, next));
 
-router.get('/:id', (req, res) => {
-    return categoriaController.obtenerPorId(req, res);
-});
+router.get('/:id', (req, res, next) => categoriaController.obtenerPorId(req, res, next));
 
-router.post('/', (req, res) => {
-    return categoriaController.crear(req, res);
-});
+router.post('/', (req, res, next) => categoriaController.crear(req, res, next));
 
-router.put('/:id', (req, res) => {
-    return categoriaController.actualizar(req, res);
-});
+router.patch('/:id', (req, res, next) => categoriaController.actualizar(req, res, next));
 
-router.delete('/:id', (req, res) => {
-    return categoriaController.eliminar(req, res);
-});
+router.put('/:id', (req, res, next) => categoriaController.actualizar(req, res, next));
+
+router.delete('/:id', (req, res, next) => categoriaController.eliminar(req, res, next));
 
 export default router;
