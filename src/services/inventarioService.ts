@@ -4,11 +4,11 @@ import AppError from '../utils/appError';
 class InventarioService {
 
     async listarStock() {
-        return await productoRepository.obtenerTodos();
+        return await productoRepository.listarSinPaginar();
     }
 
     async listarStockBajo() {
-        const productos = await productoRepository.obtenerTodos();
+        const productos = await productoRepository.listarSinPaginar();
 
         return productos.filter(
             producto => producto.stockActual <= producto.stockMinimo
